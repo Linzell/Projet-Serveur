@@ -17,6 +17,8 @@ fn main() {
           gestion_connexion(flux);
       });
   }
+
+  println!("Shutting down.");
 }
 
 fn gestion_connexion(mut flux: TcpStream) {

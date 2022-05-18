@@ -4,11 +4,16 @@ use std::sync::Mutex;
 use std::thread;
 
 pub struct GroupeTaches {
-    operateurs: Vec<Operateur>,
-    envoi: mpsc::Sender<Mission>,
+  operateurs: Vec<Operateur>,
+  envoi: mpsc::Sender<Message>,
 }
 
 type Mission = Box<dyn FnOnce() + Send + 'static>;
+
+enum Message {
+  NouvelleMission(Mission),
+  Extinction,
+}
 
 impl GroupeTaches {
     pub fn new(taille: usize) -> GroupeTaches {
@@ -33,36 +38,58 @@ impl GroupeTaches {
     {
         let mission = Box::new(f);
 
-        self.envoi.send(mission).unwrap();
+        self.envoi.send(Message::NouvelleMission(mission)).unwrap();
     }
 }
 
 impl Drop for GroupeTaches {
   fn drop(&mut self) {
+      println!("Envoi du message d'extinction à tous les opérateurs.");
+
+      for _ in &self.operateurs {
+          self.envoi.send(Message::Extinction).unwrap();
+      }
+
+      println!("Arrêt de tous les opérateurs.");
+
       for operateur in &mut self.operateurs {
           println!("Arrêt de l'opérateur {}", operateur.id);
 
-          operateur.tache.join().unwrap();
+          if let Some(tache) = operateur.tache.take() {
+              tache.join().unwrap();
+          }
       }
   }
 }
 
 
 struct Operateur {
-    id: usize,
-    tache: thread::JoinHandle<()>,
+  id: usize,
+  tache: Option<thread::JoinHandle<()>>,
 }
 
 impl Operateur {
-  fn new(id: usize, reception: Arc<Mutex<mpsc::Receiver<Mission>>>) -> Operateur {
-      let tache = thread::spawn(move || {
-          while let Ok(mission) = reception.lock().unwrap().recv() {
-              println!("L'opérateur {} a obtenu une mission ; il l'exécute.", id);
+  fn new(id: usize, reception: Arc<Mutex<mpsc::Receiver<Message>>>) -> Operateur {
+      let tache = thread::spawn(move || loop {
+          let message = reception.lock().unwrap().recv().unwrap();
 
-              mission();
+          match message {
+              Message::NouvelleMission(mission) => {
+                  println!("L'opérateur {} a reçu une mission ; il l'exécute.", id);
+
+                  mission();
+              }
+              Message::Extinction => {
+                  println!("L'opérateur {} a reçu l'instruction d'arrêt.", id);
+
+                  break;
+              }
           }
       });
 
-      Operateur { id, tache }
+      Operateur {
+          id,
+          tache: Some(tache),
+      }
   }
 }
