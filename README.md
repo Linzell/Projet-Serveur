@@ -1,6 +1,10 @@
 # Projet-Serveur
 
-Serveur simple permetant la mise en ligne d'une page internet et de répondre à de multiples requêtes.
+Serveur simple permetant la mise en ligne d'une page internet/projet web.
+
+Permet de gérer les multiples requêtes.
+Protection anti DDOS.
+Coupure auto si le serveur doit paniquer en code.
 
 ## Environnement de développement
 
