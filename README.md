@@ -1,5 +1,7 @@
 # Projet-Serveur
 
+Serveur simple permetant la mise en ligne d'une page internet et de répondre à de multiples requêtes.
+
 ## Environnement de développement
 
 <p align="left">
