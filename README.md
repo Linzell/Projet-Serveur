@@ -2,9 +2,9 @@
 
 Serveur simple permetant la mise en ligne d'une page internet/projet web.
 
-Permet de gérer les multiples requêtes.
-Protection anti DDOS.
-Coupure auto si le serveur doit paniquer en code.
+Permet de gérer les multiples requêtes. <br />
+Protection anti DDOS. <br />
+Coupure auto si le serveur doit paniquer en code. <br />
 
 ## Environnement de développement
 
